@@ -9,11 +9,11 @@ Symlinker requires the following npm packages:
 - optimist
 - mkdirp
 
-Install them With [npm](http://github.com/isaacs/npm):
+Install them with [npm](http://github.com/isaacs/npm):
 
     npm install optimist mkdirp
 
-After that download this repository and navigate to it.
+After that, download this repository and navigate to it.
 
 Then type:
 
@@ -21,7 +21,7 @@ Then type:
 
 ##Symlinker File
 
-A symlinker file is basically an JSON array with the names of the folders you want to link. This folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
+A symlinker file is basically a JSON array with the names of the folders you want to link. This folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
 
 Example:
 ````javascript
