@@ -8,11 +8,18 @@ var mkdirp = require('mkdirp');
 
 var fs = require('fs');
 
+/* Replace Backslash Function */
+
+function replaceBackslash (str) {
+	var reg = new RegExp("\\\\", 'g');
+	return str.replace(reg, "/");
+}
+
 /* Setting Variables */
 // argv
-var filePath = argv._[0];
-var destinationPath = argv.d;
-var sourcePath = argv.s;
+var filePath = replaceBackslash(argv._[0]);console.log(filePath);
+var destinationPath = replaceBackslash(argv.d);
+var sourcePath = replaceBackslash(argv.s);
 
 var forceCreation = argv.f;
 var forceRecreation = argv.r;
@@ -95,7 +102,7 @@ for (var i = 0; i < file.length; i++) {
 			}
 
 			fs.symlinkSync(getPath, putPath, "dir");
-			console.log("Created " + putPath + "\n");
+			console.log("Created " + putPath);
 		} catch (err) {
 			throw(err);
 			console.log("Error creating symbolic link " + getPath + " -> " + putPath);
