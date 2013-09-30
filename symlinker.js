@@ -80,19 +80,24 @@ for (var i = 0; i < file.length; i++) {
 		try {
 			var dirs = putPath.slice(0,putPath.lastIndexOf("/"));
 			mkdirp(dirs);
-			var isSymbolicLink = fs.lstatSync(putPath).isSymbolicLink();
-			if (isSymbolicLink) {
-				if (!forceRecreation) {
-					console.log("Symbolic link " + putPath  + " already exists.\nUse -r to force symbolic link recreation.");
-					process.exit();
-				} else {
-					fs.unlinkSync(putPath);
+			try {
+				var isSymbolicLink = fs.lstatSync(putPath).isSymbolicLink();
+				if (isSymbolicLink) {
+					if (!forceRecreation) {
+						console.log("Symbolic link " + putPath  + " already exists.\nUse -r to force symbolic link recreation.");
+						process.exit();
+					} else {
+						fs.unlinkSync(putPath);
+					}
 				}
+			} catch (err) {
+				// file doesn't exist
 			}
 
 			fs.symlinkSync(getPath, putPath, "dir");
 			console.log("Created " + putPath + "\n");
 		} catch (err) {
+			throw(err);
 			console.log("Error creating symbolic link " + getPath + " -> " + putPath);
 			process.exit();
 		}
