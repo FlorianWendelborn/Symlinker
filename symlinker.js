@@ -17,7 +17,7 @@ function replaceBackslash (str) {
 
 /* Setting Variables */
 // argv
-var filePath = replaceBackslash(argv._[0]);console.log(filePath);
+var filePath = replaceBackslash(argv._[0]);
 var destinationPath = replaceBackslash(argv.d);
 var sourcePath = replaceBackslash(argv.s);
 
