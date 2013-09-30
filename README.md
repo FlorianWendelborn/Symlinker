@@ -24,8 +24,8 @@ Then type:
 A symlinker file is basically a JSON array with the names of the folders you want to link. This folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
 
 Example:
-````javascript
-    ["documents/home","documents/work"]
+````json
+["documents/home","documents/work"]
 ````
 
 ##License
