@@ -3,6 +3,31 @@ Symlinker
 
 Automatically creates symbolic links based on a provided JSON file.
 
+##Installation
+
+Symlinker requires the following npm packages:
+- optimist
+- mkdirp
+
+Install them With [npm](http://github.com/isaacs/npm):
+
+    npm install optimist mkdirp
+
+After that download this repository and navigate to it.
+
+Then type:
+
+    node symlinker.js [symlinkerFile] -s [absoluteSourcePath] -d [absoluteDestinationPath]
+
+##Symlinker File
+
+A symlinker file is basically an JSON array with the names of the folders you want to link. This folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
+
+Example:
+````javascript
+    ["documents/home","documents/work"]
+````
+
 ##License
 
 BSD 2-Clause License
