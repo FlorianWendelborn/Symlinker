@@ -27,6 +27,15 @@ Example:
 ````json
 ["documents/home","documents/work"]
 ````
+##Options
+###-c
+The -c option allows Symlinker to create the destination folder.
+
+###-f
+The -f option allows Symlinker to create subdirectorys.
+
+###-r
+The -r option allows Symlinker to replace old symbolic links.
 
 ##License
 
