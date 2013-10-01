@@ -6,8 +6,8 @@ Automatically creates symbolic links based on a provided JSON file.
 ##Installation
 
 Symlinker requires [nodejs](http://nodejs.org/) and the following npm packages:
-- optimist
-- mkdirp
+- [optimist](https://github.com/substack/node-optimist)
+- [mkdirp](https://github.com/substack/node-mkdirp)
 
 Install them with [npm](http://github.com/isaacs/npm):
 
