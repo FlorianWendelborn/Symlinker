@@ -5,7 +5,7 @@ Automatically creates symbolic links based on a provided JSON file.
 
 ##Installation
 
-Symlinker requires the following npm packages:
+Symlinker requires [nodejs](http://nodejs.org/) and the following npm packages:
 - optimist
 - mkdirp
 
