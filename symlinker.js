@@ -37,7 +37,7 @@ var file;
 try {
 	rawFile = fs.readFileSync(filePath, 'utf8');
 } catch (err) {
-	console.log("Could not read the provided symlinker file.\n" + filePath);
+	console.log("Could not read the provided Symlinker file.\n" + filePath);
 	process.exit();
 }
 
@@ -66,7 +66,7 @@ if (!destinationExists) {
 try {
 	file = JSON.parse(rawFile);
 } catch (err) {
-	console.log("Could not parse the provided symlinker file.\n" + filePath);
+	console.log("Could not parse the provided Symlinker file.\n" + filePath);
 }
 
 /* Iterating */
