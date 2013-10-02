@@ -1,7 +1,19 @@
 /* Requiring */
 var argv = require('optimist')
-	.usage("Usage: $0 file -s [source] -d [destination] -c [boolean: forceDestinationCreation] -f [boolean: forceSymbolicLinkCreation] -r [boolean: forceSymbolicLinkRecreation")
+	.usage("Usage: $0 file -s [source] -d [destination]")
 	.demand(['_','s','d'])
+	.alias('s', 'source')
+    .alias('d', 'destination')
+    .alias('c', 'create')
+    .alias('f', 'skip')
+    .alias('r', 'recreate')
+    .alias('i', 'ignore')
+    .describe('s', 'specify the source folder')
+    .describe('d', 'specify the destination folder')
+    .describe('c', 'force creation of destination folder')
+    .describe('f', 'skips invalid paths')
+    .describe('r', 'force symbolic link recreation for existing symbolic links')
+    .describe('i', 'ignores file not found errors')
 	.argv;
 
 var mkdirp = require('mkdirp');
@@ -24,6 +36,7 @@ var sourcePath = replaceBackslash(argv.s);
 var forceCreation = argv.f;
 var forceRecreation = argv.r;
 var forceDestinationCreation = argv.c;
+var isIgnoring = argv.i;
 
 // validation
 var sourceExists;
@@ -38,14 +51,14 @@ try {
 	rawFile = fs.readFileSync(filePath, 'utf8');
 } catch (err) {
 	console.log("Could not read the provided Symlinker file.\n" + filePath);
-	process.exit();
+	process.exit(1);
 }
 
 sourceExists = fs.existsSync(sourcePath);	
 
 if (!sourceExists) {
 	console.log("Source folder not found.\n" + sourcePath);
-	process.exit();
+	process.exit(1);
 }
 
 destinationExists = fs.existsSync(destinationPath);
@@ -54,7 +67,7 @@ if (!destinationExists) {
 	console.log("Destination folder not found.\n" + destinationPath);
 	if (!forceDestinationCreation) {
 		console.log("Use -c if you want Symlinker to create the destination folder.");
-		process.exit();
+		process.exit(1);
 	} else {
 		console.log("Creating destination folder.");
 		mkdirp.sync(destinationPath);
@@ -81,18 +94,18 @@ for (var i = 0; i < file.length; i++) {
 	if (!valid) {
 		if (!forceCreation) {
 			console.log("Path isn't valid: " + getPath + "\nUse -f if you want Symlinker to force symbolic link creation for invalid sources.");
-			process.exit();
+			process.exit(1);
 		}
 	} else {
 		try {
 			var dirs = putPath.slice(0,putPath.lastIndexOf("/"));
-			mkdirp(dirs);
+			mkdirp.sync(dirs);
 			try {
 				var isSymbolicLink = fs.lstatSync(putPath).isSymbolicLink();
 				if (isSymbolicLink) {
 					if (!forceRecreation) {
 						console.log("Symbolic link " + putPath  + " already exists.\nUse -r to force symbolic link recreation.");
-						process.exit();
+						process.exit(1);
 					} else {
 						fs.unlinkSync(putPath);
 					}
@@ -100,13 +113,22 @@ for (var i = 0; i < file.length; i++) {
 			} catch (err) {
 				// file doesn't exist
 			}
-
-			fs.symlinkSync(getPath, putPath, "dir");
+			var stats = fs.lstatSync(getPath);
+			if (stats.isDirectory()) {
+				fs.symlinkSync(getPath, putPath, "dir");
+			} else if (stats.isFile()) {
+				fs.symlinkSync(getPath, putPath, "file");
+			} else {
+				if (!isIgnoring) {
+					console.log("Could not create symbolic link. " + getPath + " is neither a file nor a folder. Use -i to allow Symlinker to continue after this error.");
+					process.exit(1);
+				}
+			}
 			console.log("Created " + putPath);
 		} catch (err) {
-			throw(err);
 			console.log("Error creating symbolic link " + getPath + " -> " + putPath);
-			process.exit();
+			throw(err);
+			process.exit(1);
 		}
 	}
 }

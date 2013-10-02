@@ -21,21 +21,24 @@ Then type:
 
 ##Symlinker File
 
-A symlinker file is basically a JSON array with the names of the folders you want to link. This folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
+A symlinker file is basically a JSON array with the names of the files or folders you want to link. This files or folders must exist in the source folder and will be symlinked to the matching path in the destination folder.
 
 Example:
 ````json
-["documents/home","documents/work"]
+["documents/home","documents/work","documents/private/important.odt"]
 ````
 ##Options
-###-c
-The -c option allows Symlinker to create the destination folder.
+###-c --create
+Eventually creates destination folder.
 
-###-f
-The -f option allows Symlinker to create subdirectorys.
+###-f --skip
+Skips invalid paths while creating symbolic links.
 
-###-r
+###-r --replace
 The -r option allows Symlinker to replace old symbolic links.
+
+###-i --ignore
+Ignores file not found errors.
 
 ##License
 
