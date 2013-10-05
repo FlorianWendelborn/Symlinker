@@ -117,7 +117,6 @@ for (var i = 0; i < file.length; i++) {
 
 	if (!valid) {
 		if (!forceCreation) {
-			console.log(JSON.stringify({"getPath": getPath, "putPath": putPath}));
 			console.log("Path isn't valid: " + getPath + "\nUse -f if you want Symlinker to force symbolic link creation for invalid sources.");
 			process.exit(1);
 		}
