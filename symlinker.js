@@ -2,18 +2,21 @@
 var argv = require('optimist')
 	.usage("Usage: $0 file -s [source] -d [destination]")
 	.demand(['_','s','d'])
+	.default('t', 'text-newline')
 	.alias('s', 'source')
     .alias('d', 'destination')
     .alias('c', 'create')
     .alias('f', 'skip')
     .alias('r', 'recreate')
     .alias('i', 'ignore')
+    .alias('t', 'type')
     .describe('s', 'specify the source folder')
     .describe('d', 'specify the destination folder')
     .describe('c', 'force creation of destination folder')
     .describe('f', 'skips invalid paths')
     .describe('r', 'force symbolic link recreation for existing symbolic links')
     .describe('i', 'ignores file not found errors')
+    .describe('t', 'Specifies the format of the Symlinker-file. Supported: json, text-newline. Default: text-newline')
 	.argv;
 
 var mkdirp = require('mkdirp');
@@ -37,6 +40,8 @@ var forceCreation = argv.f;
 var forceRecreation = argv.r;
 var forceDestinationCreation = argv.c;
 var isIgnoring = argv.i;
+
+var parseType = argv.t;
 
 // validation
 var sourceExists;
@@ -76,10 +81,29 @@ if (!destinationExists) {
 
 /* Parsing Symlinker File */
 
-try {
-	file = JSON.parse(rawFile);
-} catch (err) {
-	console.log("Could not parse the provided Symlinker file.\n" + filePath);
+switch (parseType) {
+	case "text-newline":
+		file = rawFile.replace(/(\r)/gm,"").split("\n");
+		if(file.length == 1 && file[0].charAt(0) == "[") {
+			try {
+				 JSON.parse(rawFile);
+				 console.log("This Symlinker-file looks like json but -t json was missing.");
+				 process.exit();
+			} catch (err) {
+
+			}
+		}
+	break;
+	case "json":
+		try {
+			file = JSON.parse(rawFile);
+		} catch (err) {
+			console.log("Could not parse the provided Symlinker file.\n" + filePath);
+		}
+	break;
+	default:
+		console.log("Invalid value for Symlinker-file type.");
+		process.exit();
 }
 
 /* Iterating */
@@ -93,6 +117,7 @@ for (var i = 0; i < file.length; i++) {
 
 	if (!valid) {
 		if (!forceCreation) {
+			console.log(JSON.stringify({"getPath": getPath, "putPath": putPath}));
 			console.log("Path isn't valid: " + getPath + "\nUse -f if you want Symlinker to force symbolic link creation for invalid sources.");
 			process.exit(1);
 		}
