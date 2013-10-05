@@ -40,7 +40,7 @@ Example:
 ````json
 ["documents/home","documents/work","documents/private/important.odt"]
 ````
-For JSON you have the following console argument:
+For JSON you'll have to use the following console argument:
 
     -t json
 
