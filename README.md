@@ -9,7 +9,7 @@ Symlinker requires [nodejs](http://nodejs.org/).
 
 ###via [npm](http://github.com/isaacs/npm)
 
-    npm install symlinker
+    npm install symlinker -g
 
 Then type:
 
