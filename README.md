@@ -5,7 +5,18 @@ Automatically creates symbolic links based on a provided file.
 
 ##Installation
 
-Symlinker requires [nodejs](http://nodejs.org/) and the following npm packages:
+Symlinker requires [nodejs](http://nodejs.org/).
+
+###via [npm](http://github.com/isaacs/npm)
+
+    npm install symlinker
+
+Then type:
+
+    symlinker [symlinkerFile] -s [absoluteSourcePath] -d [absoluteDestinationPath]
+
+###via github
+Symlinker requires the following npm packages:
 - [optimist](https://github.com/substack/node-optimist)
 - [mkdirp](https://github.com/substack/node-mkdirp)
 
