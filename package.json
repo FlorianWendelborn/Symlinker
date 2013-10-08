@@ -4,7 +4,7 @@
 	"description": "Node command line application to symlink a list of folders.",
 	"version": "0.0.1",
 	"repository": {
-		"url": "https://github.com/FlorianWendelborn/Symlinker"
+		"url": "https://github.com/FlorianWendelborn/Symlinker.git"
 	},
 	"scripts": {
 		"start": "node symlinker.js"
