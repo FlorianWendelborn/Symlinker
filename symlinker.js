@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* Requiring */
 var argv = require('optimist')
 	.usage("Usage: $0 file -s [source] -d [destination]")
