@@ -74,9 +74,9 @@ The -r option allows Symlinker to replace old symbolic links.
 ###-i --ignore (optional)
 Ignores file not found errors.
 
-###-t --type [name] (optional)
+###-t --type (optional)
 Specifies the filetype of the Symlinker-file. Possible values:
-- text-newlin (default)
+- text-newline (default)
 - json
 
 ##License
