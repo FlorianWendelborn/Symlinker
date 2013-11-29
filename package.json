@@ -1,19 +1,27 @@
 {
-	"author": "Florian Wendelborn",
 	"name": "symlinker",
+	"version": "0.0.2",
+	"author": "Florian Wendelborn",
 	"description": "Node command line application to symlink a list of folders.",
-	"version": "0.0.1",
 	"repository": {
-		"url": "https://github.com/FlorianWendelborn/Symlinker.git"
+		"type": "git",
+		"url": "https://github.com/FlorianWendelborn/Symlinker"
 	},
+	"bugs": {
+		"url": "https://github.com/nodeapps/http-server/issues"
+	},
+	"licenses": [
+		{
+			"type": "BSD",
+			"url": "https://github.com/FlorianWendelborn/symlinker/master/LICENSE"
+		}
+	],
 	"scripts": {
-		"start": "node symlinker.js"
+		"start": "node ./symlinker.js"
 	},
-	"main": "./symlinker.js",
-	"bin": "./symlinker.js",
+	"bin": {
+		"symlinker": "./symlinker.js"
+	},
 	"dependencies": {"optimist":"~0.6.0","mkdirp":"~0.3.5"},
-	"engines": {
-		"node": "*"
-	},
 	"preferGlobal":true
 }
