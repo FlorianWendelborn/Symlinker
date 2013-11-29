@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* Requiring */
 var argv = require('optimist')
-	.usage("Usage: $0 file -s [source] -d [destination]")
-	.demand(['_','s','d'])
-	.default('t', 'text-newline')
+	.usage("Usage: $0 file")
+	.demand(['_'])
+	.default('t', 'advanced-newline')
 	.alias('s', 'source')
 	.alias('d', 'destination')
 	.alias('c', 'create')
@@ -17,7 +17,7 @@ var argv = require('optimist')
 	.describe('f', 'skips invalid paths')
 	.describe('r', 'force symbolic link recreation for existing symbolic links')
 	.describe('i', 'ignores file not found errors')
-	.describe('t', 'Specifies the format of the Symlinker-file. Supported: json, text-newline. Default: text-newline')
+	.describe('t', 'Specifies the format of the Symlinker-file. Supported: json, text-newline, advanced-newline. Default: advanced-newline')
 	.argv;
 
 var mkdirp = require('mkdirp');
@@ -34,8 +34,14 @@ function replaceBackslash (str) {
 /* Setting Variables */
 // argv
 var filePath = replaceBackslash(argv._[0]);
-var destinationPath = replaceBackslash(argv.d);
-var sourcePath = replaceBackslash(argv.s);
+
+if (argv.t != 'advanced-newline') {
+	var destinationPath = replaceBackslash(argv.d);
+	var sourcePath = replaceBackslash(argv.s);
+} else {
+	var destinationPath = false;
+	var sourcePath = false;
+}
 
 var forceCreation = argv.f;
 var forceRecreation = argv.r;
@@ -43,10 +49,6 @@ var forceDestinationCreation = argv.c;
 var isIgnoring = argv.i;
 
 var parseType = argv.t;
-
-// validation
-var sourceExists;
-var destinationExists;
 
 // resources
 var rawFile;
@@ -60,100 +62,140 @@ try {
 	process.exit(1);
 }
 
-sourceExists = fs.existsSync(sourcePath);	
+// if (argv.t != 'advanced-newline') {
+// 	// validation
+// 	var sourceExists;
+// 	var destinationExists;
 
-if (!sourceExists) {
-	console.log("Source folder not found.\n" + sourcePath);
-	process.exit(1);
-}
+// 	sourceExists = fs.existsSync(sourcePath);
+// 	if (!sourceExists) {
+// 		console.log("Source folder not found.\n" + sourcePath);
+// 		process.exit(1);
+// 	}
 
-destinationExists = fs.existsSync(destinationPath);
-
-if (!destinationExists) {
-	console.log("Destination folder not found.\n" + destinationPath);
-	if (!forceDestinationCreation) {
-		console.log("Use -c if you want Symlinker to create the destination folder.");
-		process.exit(1);
-	} else {
-		console.log("Creating destination folder.");
-		mkdirp.sync(destinationPath);
-	}
-}
+// 	destinationExists = fs.existsSync(destinationPath);
+// 	if (!destinationExists) {
+// 		console.log("Destination folder not found.\n" + destinationPath);
+// 		if (!forceDestinationCreation) {
+// 			console.log("Use -c if you want Symlinker to create the destination folder.");
+// 			process.exit(1);
+// 		} else {
+// 			console.log("Creating destination folder.");
+// 			mkdirp.sync(destinationPath);
+// 		}
+// 	}
+// }
 
 /* Parsing Symlinker File */
 
+var task = new Array();
+
 switch (parseType) {
 	case "text-newline":
-		file = rawFile.replace(/(\r)/gm,"").split("\n");
-		if(file.length == 1 && file[0].charAt(0) == "[") {
-			try {
-				 JSON.parse(rawFile);
-				 console.log("This Symlinker-file looks like json but -t json was missing.");
-				 process.exit();
-			} catch (err) {
-
-			}
+		try {
+				task = [{
+				'input': argv.s,
+				'items': rawFile.replace(/(\r)/gm,"").split("\n"),
+				'output': argv.d
+			}];
+		} catch (err) {
+			console.log("Could not parse the provided Symlinker file.\n" + filePath);
+			process.exit(1);
 		}
 	break;
 	case "json":
 		try {
-			file = JSON.parse(rawFile);
+			task = [{
+				'input': argv.s,
+				'items': JSON.parse(rawFile),
+				'output': argv.d
+			}];
 		} catch (err) {
 			console.log("Could not parse the provided Symlinker file.\n" + filePath);
+			process.exit(1);
+		}
+	break;
+	case "advanced-newline":
+		try {
+			
+			file = false;
+			
+			var temp = rawFile.replace(/(\r)/gm,"").split("\n");
+			
+			var queue = new Object();
+			
+			for (var i = 0; i < temp.length; i++) {
+				
+				var content = temp[i].slice(1);
+
+				switch(temp[i][0]) {
+					case '$':
+						queue = {'input': content,'items':[]};
+					break;
+					case '-':
+						queue.items.push(content);
+					break;
+					case '>':
+						queue.output = content;
+						task.push(queue);
+					break;
+					case undefined: break;
+					default:
+						console.log("invalid file syntax " + JSON.stringify(temp[i]) + " in line " + i);
+				}
+			}
+		} catch (err) {
+			console.error("Could not parse the provided Symlinker file.\n" + filePath);
+			process.exit(1);
 		}
 	break;
 	default:
-		console.log("Invalid value for Symlinker-file type.");
-		process.exit();
+		console.error("Invalid value for Symlinker-file type.");
+		process.exit(1);
 }
 
-/* Iterating */
-for (var i = 0; i < file.length; i++) {
-	// setting path
-	var getPath = sourcePath + "/" + file[i];
-	var putPath = destinationPath + "/" + file[i];
+for (var i = 0; i < task.length; i++) {
+	var q = task[i];
 
 	// checking if source folder is valid
-	var valid = fs.existsSync(getPath);
+	var valid = fs.existsSync(q.input);
 
-	if (!valid) {
-		if (!forceCreation) {
-			console.log("Path isn't valid: " + getPath + "\nUse -f if you want Symlinker to force symbolic link creation for invalid sources.");
-			process.exit(1);
-		}
+	if (!valid && !forceCreation) {
+		console.error('Path isn\'t valid: ' + q.input)
 	} else {
-		try {
-			var dirs = putPath.slice(0,putPath.lastIndexOf("/"));
-			mkdirp.sync(dirs);
+		for (var j = 0; j < q.items.length; j++) {
 			try {
-				var isSymbolicLink = fs.lstatSync(putPath).isSymbolicLink();
-				if (isSymbolicLink) {
-					if (!forceRecreation) {
-						console.log("Symbolic link " + putPath  + " already exists.\nUse -r to force symbolic link recreation.");
-						process.exit(1);
-					} else {
-						fs.unlinkSync(putPath);
+				var outputPath = q.output + '/' + q.items[j];
+				var inputPath = q.input + '/' + q.items[j];
+				var dirs = outputPath.slice(0,outputPath.lastIndexOf("/"));
+				mkdirp.sync(dirs);
+				try {
+					if (fs.lstatSync(outputPath).isSymbolicLink()) {
+						if (!forceRecreation) {
+							console.log("Symbolic link " + outputPath  + " already exists.\nUse -r to force symbolic link recreation.");
+							process.exit(1);
+						} else {
+							fs.unlinkSync(outputPath);
+						}
 					}
+				} catch (err) {
+					// file doesn't exist
 				}
-			} catch (err) {
-				// file doesn't exist
-			}
-			var stats = fs.lstatSync(getPath);
-			if (stats.isDirectory()) {
-				fs.symlinkSync(getPath, putPath, "dir");
-			} else if (stats.isFile()) {
-				fs.symlinkSync(getPath, putPath, "file");
-			} else {
-				if (!isIgnoring) {
-					console.log("Could not create symbolic link. " + getPath + " is neither a file nor a folder. Use -i to allow Symlinker to continue after this error.");
+				var stats = fs.lstatSync(inputPath);
+				if (stats.isDirectory()) {
+					fs.symlinkSync(inputPath, outputPath, 'dir');
+				} else if (stats.isFile()) {
+					fs.symlinkSync(inputPath, outputPath, 'file');
+				} else if (!isIgnoring) {
+					console.log("Could not create symbolic link. " + inputPath + " is neither a file nor a folder. Use -i to allow Symlinker to continue after this error.");
 					process.exit(1);
 				}
+				console.log('Created ' + outputPath);
+			} catch (err) {
+				throw(err);
+				console.error('Error creating symlink ' + q.input + ' -> ' + q.output);
+				process.exit(1);
 			}
-			console.log("Created " + putPath);
-		} catch (err) {
-			console.log("Error creating symbolic link " + getPath + " -> " + putPath);
-			throw(err);
-			process.exit(1);
 		}
 	}
 }
