@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Requiring */
+/* dependencies */
 var argv = require('optimist')
 	.usage("Usage: $0 file")
 	.demand(['_'])
@@ -52,7 +52,6 @@ var parseType = argv.t;
 
 // resources
 var rawFile;
-var file;
 
 /* Validating */
 try {
@@ -117,11 +116,9 @@ switch (parseType) {
 	break;
 	case "advanced-newline":
 		try {
-			
-			file = false;
-			
+
 			var temp = rawFile.replace(/(\r)/gm,"").split("\n");
-			
+
 			var queue = new Object();
 			
 			for (var i = 0; i < temp.length; i++) {
@@ -163,6 +160,7 @@ for (var i = 0; i < task.length; i++) {
 	if (!valid && !forceCreation) {
 		console.error('Path isn\'t valid: ' + q.input)
 	} else {
+		console.log('\n$' + q.input);
 		for (var j = 0; j < q.items.length; j++) {
 			try {
 				var outputPath = q.output + '/' + q.items[j];
@@ -190,12 +188,13 @@ for (var i = 0; i < task.length; i++) {
 					console.log("Could not create symbolic link. " + inputPath + " is neither a file nor a folder. Use -i to allow Symlinker to continue after this error.");
 					process.exit(1);
 				}
-				console.log('Created ' + outputPath);
+				console.log('-' + q.items[j]);
 			} catch (err) {
 				throw(err);
 				console.error('Error creating symlink ' + q.input + ' -> ' + q.output);
 				process.exit(1);
 			}
 		}
+		console.log('>' + q.output);
 	}
 }
