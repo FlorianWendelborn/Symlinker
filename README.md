@@ -53,9 +53,11 @@ $E:\music
 ````
 
 Explanation:
+````text
 $ specifys main directory for the current group of files/folders, starts a new list
-\- adds an subfolder to the list
+- adds an subfolder to the list
 > adds an output directory for the symlinked files/folders
+````
 
 Tips:
 You can use multiple lists in one file. Also multiple output locations are possible.
