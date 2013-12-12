@@ -54,7 +54,7 @@ $E:\music
 
 Explanation:
 $ specifys main directory for the current group of files/folders, starts a new list
-- adds an subfolder to the list
+\- adds an subfolder to the list
 > adds an output directory for the symlinked files/folders
 
 Tips:
