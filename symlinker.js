@@ -61,30 +61,6 @@ try {
 	process.exit(1);
 }
 
-// if (argv.t != 'advanced-newline') {
-// 	// validation
-// 	var sourceExists;
-// 	var destinationExists;
-
-// 	sourceExists = fs.existsSync(sourcePath);
-// 	if (!sourceExists) {
-// 		console.log("Source folder not found.\n" + sourcePath);
-// 		process.exit(1);
-// 	}
-
-// 	destinationExists = fs.existsSync(destinationPath);
-// 	if (!destinationExists) {
-// 		console.log("Destination folder not found.\n" + destinationPath);
-// 		if (!forceDestinationCreation) {
-// 			console.log("Use -c if you want Symlinker to create the destination folder.");
-// 			process.exit(1);
-// 		} else {
-// 			console.log("Creating destination folder.");
-// 			mkdirp.sync(destinationPath);
-// 		}
-// 	}
-// }
-
 /* Parsing Symlinker File */
 
 var task = new Array();

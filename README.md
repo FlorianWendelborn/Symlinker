@@ -13,7 +13,7 @@ Symlinker requires [nodejs](http://nodejs.org/).
 
 Then type:
 
-    symlinker [symlinkerFile] -s [absoluteSourcePath] -d [absoluteDestinationPath]
+    symlinker [symlinkerFile]
 
 ###via github
 Symlinker requires the following npm packages:
@@ -28,13 +28,37 @@ After that, download this repository and navigate to it.
 
 Then type:
 
-    node symlinker.js [symlinkerFile] -s [absoluteSourcePath] -d [absoluteDestinationPath]
+    node symlinker.js [symlinkerFile]
 
 ##Symlinker File
 
 ###General Information
 
 A symlinker file is basically list of the file- or foldernames you want to link. This files or folders must exist in the source folder and will be symlinked to the matching path in the destination folder. You can choose between two different formats.
+
+###advanced-newline [default]
+
+Example:
+`````text
+$C:\documents
+-business
+-private
+>C:\workspace\documents
+
+$E:\music
+-Psy
+-Linkin Park
+>C:\myData\music
+>E:\myData\music
+````
+
+Explanation:
+$ specifys main directory for the current group of files/folders, starts a new list
+- adds an subfolder to the list
+> adds an output directory for the symlinked files/folders
+
+Tips:
+You can use multiple lists in one file. Also multiple output locations are possible.
 
 ###text-newline
 
@@ -44,6 +68,9 @@ documents/home
 documents/work
 documents/private/important.odt
 ````
+To use text-newline you'll have to use this console argument:
+
+	-t text-newline
 
 ###JSON
 
