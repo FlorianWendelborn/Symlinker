@@ -45,19 +45,25 @@ $C:\documents
 -private
 >C:\workspace\documents
 
+#music linked to my private music folders
+
 $E:\music
 -Psy
 -Linkin Park
 >C:\myData\music
+#just adding C418 to the list (will only link to following >outputDirectorys)
+-C418
 >E:\myData\music
 ````
 
 Explanation:
-````text
-$ specifys main directory for the current group of files/folders, starts a new list
-- adds an subfolder to the list
-> adds an output directory for the symlinked files/folders
-````
+
+| character | description                                                                      |
+|----------:|:---------------------------------------------------------------------------------|
+|         $ | specifys main directory for the current group of files/folders, starts a new list|
+|        \- | adds an subfolder to the list                                                    |
+|        \> | adds an output directory for the symlinked files/folders                         |
+|        \# | that's a comment - it will be ignored                                            |
 
 Tips:
 You can use multiple lists in one file. Also multiple output locations are possible.

@@ -24,11 +24,22 @@ var mkdirp = require('mkdirp');
 
 var fs = require('fs');
 
-/* Replace Backslash Function */
+/* basic functions */
 
 function replaceBackslash (str) {
 	var reg = new RegExp("\\\\", 'g');
 	return str.replace(reg, "/");
+}
+
+function clone(obj){
+    if(obj == null || typeof(obj) != 'object')
+        return obj;
+
+    var temp = obj.constructor();
+
+    for(var key in obj)
+        temp[key] = clone(obj[key]);
+    return temp;
 }
 
 /* Setting Variables */
@@ -110,9 +121,10 @@ switch (parseType) {
 					break;
 					case '>':
 						queue.output = content;
-						task.push(queue);
+						task.push(clone(queue));
 					break;
 					case undefined: break;
+					case '#': break;
 					default:
 						console.log("invalid file syntax " + JSON.stringify(temp[i]) + " in line " + i);
 				}
