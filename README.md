@@ -39,7 +39,7 @@ A symlinker file is basically list of the file- or foldernames you want to link.
 ###advanced-newline [default]
 
 Example:
-`````text
+````text
 $C:\documents
 -business
 -private

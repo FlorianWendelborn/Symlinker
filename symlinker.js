@@ -153,7 +153,7 @@ for (var i = 0; i < task.length; i++) {
 			try {
 				var outputPath = q.output + '/' + q.items[j];
 				var inputPath = q.input + '/' + q.items[j];
-				var dirs = outputPath.slice(0,outputPath.lastIndexOf("/"));
+				var dirs = outputPath.slice(0,outputPath.lastIndexOf('/'));
 				mkdirp.sync(dirs);
 				try {
 					if (fs.lstatSync(outputPath).isSymbolicLink()) {
@@ -178,7 +178,7 @@ for (var i = 0; i < task.length; i++) {
 				}
 				console.log('-' + q.items[j]);
 			} catch (err) {
-				throw(err);
+				console.error(err);
 				console.error('Error creating symlink ' + q.input + ' -> ' + q.output);
 				process.exit(1);
 			}
