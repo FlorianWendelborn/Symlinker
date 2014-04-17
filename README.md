@@ -34,7 +34,7 @@ Then type:
 
 ###General Information
 
-A symlinker file is basically list of the file- or foldernames you want to link. This files or folders must exist in the source folder and will be symlinked to the matching path in the destination folder. You can choose between two different formats.
+A symlinker file is basically a list of the file- or foldernames you want to link. This files or folders must exist in the source folder and will be symlinked to the matching path in the destination folder. You can choose between two different formats.
 
 ###advanced-newline [default]
 
