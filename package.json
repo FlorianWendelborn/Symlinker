@@ -1,27 +1,35 @@
 {
-	"name": "symlinker",
-	"version": "0.0.5",
-	"author": "Florian Wendelborn",
-	"description": "Node command line application to symlink a list of folders.",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/FlorianWendelborn/Symlinker"
-	},
-	"bugs": {
-		"url": "https://github.com/nodeapps/http-server/issues"
-	},
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "https://raw.githubusercontent.com/FlorianWendelborn/symlinker/master/LICENSE"
-		}
-	],
-	"main": "./symlinker.js",
-	"scripts": {
-		"start": "node ./symlinker.js"
-	},
-	"bin": {
-		"symlinker": "./symlinker.bin.js"
-	},
-	"dependencies": {"optimist":"~0.6.0","mkdirp":"~0.3.5"}
+  "name": "symlinker",
+  "version": "0.1.6",
+  "author": "Florian Wendelborn",
+  "description": "Node command line application to symlink a list of folders.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FlorianWendelborn/Symlinker"
+  },
+  "bugs": {
+    "url": "https://github.com/nodeapps/http-server/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/FlorianWendelborn/symlinker/master/LICENSE"
+    }
+  ],
+  "main": "./symlinker.js",
+  "scripts": {
+    "start": "node ./symlinker.js"
+  },
+  "bin": {
+    "symlinker": "./symlinker.bin.js"
+  },
+  "dependencies": {
+    "optimist": "~0.6.0",
+    "mkdirp": "~0.3.5"
+  },
+  "homepage": "https://github.com/FlorianWendelborn/Symlinker",
+  "keywords": [
+    "symlinker"
+  ],
+  "license": "MIT"
 }

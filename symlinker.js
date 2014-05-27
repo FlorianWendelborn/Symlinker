@@ -1,5 +1,7 @@
 var mkdirp = require('mkdirp');
 
+var path = require('path');
+
 var fs = require('fs');
 
 /* basic functions */
@@ -98,7 +100,10 @@ function open (options) {
 			console.error("Invalid value for Symlinker-file type.");
 			process.exit(1);
 	}
+	runTasks(task);
+}
 
+function runTasks (task) {
 	for (var i = 0; i < task.length; i++) {
 		var q = task[i];
 
@@ -148,5 +153,36 @@ function open (options) {
 	}
 }
 
+function basic (sourcePath, destinationPath, options, callback) {	
+	try {
+		if (fs.lstatSync(destinationPath).isSymbolicLink()) {
+			if (!options.recreateSymbolicLinks) {
+				return callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'));
+			} else {
+				fs.unlinkSync(destinationPath);
+			}
+		}
+	} catch (err) {
+		// file doesn't exist
+	}
+	
+	if (fs.existsSync(sourcePath)) { // source path is valid
+		mkdirp.sync(path.dirname(destinationPath));
+		var stats = fs.lstatSync(sourcePath);
+		if (stats.isDirectory()) {
+			fs.symlinkSync(sourcePath, destinationPath, 'dir');
+			return callback(null, true);
+		} else if (stats.isFile()) {
+			fs.symlinkSync(sourcePath, destinationPath, 'file');
+			return callback(null, true);
+		} else {
+			return callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+		}
+	} else { // source path is invalid
+		callback(new Error('Could not create symbolic link. Source doesn\'t exist.'));
+	}
+}
+
 // exporting functions
 exports.open = open;
+exports.basic = basic;
