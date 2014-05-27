@@ -12,16 +12,16 @@
 	},
 	"licenses": [
 		{
-			"type": "BSD",
-			"url": "https://github.com/FlorianWendelborn/symlinker/master/LICENSE"
+			"type": "MIT",
+			"url": "https://raw.githubusercontent.com/FlorianWendelborn/symlinker/master/LICENSE"
 		}
 	],
+	"main": "./symlinker.js",
 	"scripts": {
 		"start": "node ./symlinker.js"
 	},
 	"bin": {
-		"symlinker": "./symlinker.js"
+		"symlinker": "./symlinker.bin.js"
 	},
-	"dependencies": {"optimist":"~0.6.0","mkdirp":"~0.3.5"},
-	"preferGlobal":true
+	"dependencies": {"optimist":"~0.6.0","mkdirp":"~0.3.5"}
 }
