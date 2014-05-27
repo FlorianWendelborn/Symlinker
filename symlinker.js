@@ -5,14 +5,14 @@ var fs = require('fs');
 /* basic functions */
 
 function clone(obj){
-    if(obj == null || typeof(obj) != 'object')
-        return obj;
+	if(obj == null || typeof(obj) != 'object')
+		return obj;
 
-    var temp = obj.constructor();
+	var temp = obj.constructor();
 
-    for(var key in obj)
-        temp[key] = clone(obj[key]);
-    return temp;
+	for(var key in obj)
+		temp[key] = clone(obj[key]);
+	return temp;
 }
 
 function open (options) {
