@@ -186,35 +186,16 @@ function basic (sourcePath, destinationPath, options, callback) {
 var queue = [];
 var queueRunning;
 
-var taskId = 0;
-var tasks = []
+function advanced (task, options, callback) {
+	// task {source, destination, files:[{path, name}, *]}
 
-function advanced (list, options, callback) {
-	// list
-	// - task {source, destination, files:[{path, name}, *]}
-	// - task {source, destination, files:[{path, name}, *]}
-
-	var queueId = taskId++;
-
-	tasks[taskId] = {
-		total: list.length,
-		finished: 0,
-		active: true,
-		callback: function (err, data) {
-			callback(err, data);
-		},
-		options: options
-	};
-
-	for (var i = 0; i < list.length; i++) {
-		var currentTask = list[i];
-		queue.push({
-			source: currentTask.source,
-			destination: currentTask.destination,
-			files: currentTask.files,
-			id: queueId
-		});
-	}
+	queue.push({
+		source: task.source,
+		destination: task.destination,
+		files: task.files,
+		options: options,
+		callback: callback
+	});
 
 	if (!queueRunning) runQueue();
 }
@@ -225,14 +206,9 @@ function runQueue () {
 	console.log('runQueue: starting with ' + queue.length + ' tasks.');
 
 	while (queue.length) {
-		// {source, destination, files:[{path, name}, *], id}
+		console.log('runQueue: processing task');
+		// {source, destination, files:[{path, name}, *], callback}
 		var currentTask = queue.shift();
-		
-		// {total, finished, active, callback}
-		var queueInfo = tasks[currentTask.id];
-
-		// check activity
-		if (!queueRunning.active) continue; // skip task
 
 		// get paths
 		var sourcePath = path.normalize(currentTask.source);
@@ -247,14 +223,16 @@ function runQueue () {
 
 		// iterate
 		for (var i = 0; i < currentTask.files.length; i++) {
+			console.log('runQueue: processing file ' + i);
+
 			var currentFile = currentTask.files[i];
 
 			// get paths
-			var fileSourcePath = path.join(sourcePath + currentFile.path);
+			var fileSourcePath = path.join(sourcePath, currentFile.path);
 			if (currentFile.name && currentFile.name != '') {
-				var fileDestinationPath = path.join(destinationPath, currentFile.path);
-			} else {
 				var fileDestinationPath = path.join(destinationPath, currentFile.name);
+			} else {
+				var fileDestinationPath = path.join(destinationPath, currentFile.path);
 			}
 
 			// validify
@@ -262,11 +240,11 @@ function runQueue () {
 			var fileDestinationExisting = fs.existsSync(fileDestinationPath);
 
 			if (fileSourceValid && fileDestinationExisting && fs.lstatSync(fileDestinationPath).isSymbolicLink()) { // symbolic link at destination
-				if (queueInfo.options.recreateSymbolicLinks) { // not allowed to unlink symbolic links
+				if (!currentTask.options.recreateSymbolicLinks) { // not allowed to unlink symbolic links
 					// process queue
-					console.log('runQueue: error in queue ' + currentTask.id);
-					queueInfo.active = false;
-					queueInfo.callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'), null);
+					console.error('runQueue: error - destination is symlink', fileDestinationPath);
+					currentTask.failed = true;
+					currentTask.callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'), null);
 					break; // skip task
 				} else { // unlink symbolic link
 					fs.unlinkSync(fileDestinationPath);
@@ -279,33 +257,25 @@ function runQueue () {
 
 				if (fileSourceStats.isDirectory()) {
 					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'dir');
-				} else if (fileSourcePath.isFile()) {
+				} else if (fileSourceStats.isFile()) {
 					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'file');
 				} else {
-					// process queue
-					console.log('runQueue: error in queue ' + currentTask.id);
-					queueInfo.active = false;
-					queueInfo.callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+					console.error('runQueue: error - source neither file nor folder', fileSourcePath);
+					currentTask.failed = true;
+					currentTask.callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
 					break; // skip task
 				}
 			} else {
-				// process queue
-				console.log('runQueue: error in queue ' + currentTask.id);
-				queueInfo.active = false;
-				queueInfo.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
+				console.error('runQueue: error - source file invalid', fileSourcePath);
+				currentTask.failed = true;
+				currentTask.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
 				break; // skip task
 			}
 		}
 
-		if (!queueInfo.active) continue; // skip task
-
-		// process queue
-		queueInfo.finished++;
-		if (queueInfo.finished == queueInfo.total) { // complete queue finished
-			console.log('runQueue: finished queue ' + currentTask.id);
-			queueInfo.active = false;
-			queueInfo.callback(null, 'success');
-		}
+		if (!currentTask.failed) currentTask.callback(null, 'success');
+		
+		console.log('runQueue: finished processing task');
 	}
 
 	console.log('runQueue: finished all tasks.');
