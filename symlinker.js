@@ -183,6 +183,137 @@ function basic (sourcePath, destinationPath, options, callback) {
 	}
 }
 
+var queue = [];
+var queueRunning;
+
+var taskId = 0;
+var tasks = []
+
+function advanced (list, options, callback) {
+	// list
+	// - task {source, destination, files:[{path, name}, *]}
+	// - task {source, destination, files:[{path, name}, *]}
+
+	var queueId = taskId++;
+
+	tasks[taskId] = {
+		total: list.length,
+		finished: 0,
+		active: true,
+		callback: function (err, data) {
+			callback(err, data);
+		},
+		options: options
+	};
+
+	for (var i = 0; i < list.length; i++) {
+		var currentTask = list[i];
+		queue.push({
+			source: currentTask.source,
+			destination: currentTask.destination,
+			files: currentTask.files,
+			id: queueId
+		});
+	}
+
+	if (!queueRunning) runQueue();
+}
+
+function runQueue () {
+	queueRunning = true;
+
+	console.log('runQueue: starting with ' + queue.length + ' tasks.');
+
+	while (queue.length) {
+		// {source, destination, files:[{path, name}, *], id}
+		var currentTask = queue.shift();
+		
+		// {total, finished, active, callback}
+		var queueInfo = tasks[currentTask.id];
+
+		// check activity
+		if (!queueRunning.active) continue; // skip task
+
+		// get paths
+		var sourcePath = path.normalize(currentTask.source);
+		var destinationPath = path.normalize(currentTask.destination);
+		var destinationDir = path.dirname(destinationPath);
+
+		// validify
+		var sourceValid = fs.existsSync(sourcePath);
+		var destinationValid = fs.existsSync(destinationPath);
+
+		if (!destinationValid) mkdirp.sync(destinationDir);
+
+		// iterate
+		for (var i = 0; i < currentTask.files.length; i++) {
+			var currentFile = currentTask.files[i];
+
+			// get paths
+			var fileSourcePath = path.join(sourcePath + currentFile.path);
+			if (currentFile.name && currentFile.name != '') {
+				var fileDestinationPath = path.join(destinationPath, currentFile.path);
+			} else {
+				var fileDestinationPath = path.join(destinationPath, currentFile.name);
+			}
+
+			// validify
+			var fileSourceValid = fs.existsSync(fileSourcePath);
+			var fileDestinationExisting = fs.existsSync(fileDestinationPath);
+
+			if (fileSourceValid && fileDestinationExisting && fs.lstatSync(fileDestinationPath).isSymbolicLink()) { // symbolic link at destination
+				if (queueInfo.options.recreateSymbolicLinks) { // not allowed to unlink symbolic links
+					// process queue
+					console.log('runQueue: error in queue ' + currentTask.id);
+					queueInfo.active = false;
+					queueInfo.callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'), null);
+					break; // skip task
+				} else { // unlink symbolic link
+					fs.unlinkSync(fileDestinationPath);
+				}
+			}
+			if (fileSourceValid) {
+				var fileSourceStats = fs.lstatSync(fileSourcePath);
+
+				mkdirp.sync(path.dirname(fileDestinationPath)); // create destination directory
+
+				if (fileSourceStats.isDirectory()) {
+					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'dir');
+				} else if (fileSourcePath.isFile()) {
+					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'file');
+				} else {
+					// process queue
+					console.log('runQueue: error in queue ' + currentTask.id);
+					queueInfo.active = false;
+					queueInfo.callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+					break; // skip task
+				}
+			} else {
+				// process queue
+				console.log('runQueue: error in queue ' + currentTask.id);
+				queueInfo.active = false;
+				queueInfo.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
+				break; // skip task
+			}
+		}
+
+		if (!queueInfo.active) continue; // skip task
+
+		// process queue
+		queueInfo.finished++;
+		if (queueInfo.finished == queueInfo.total) { // complete queue finished
+			console.log('runQueue: finished queue ' + currentTask.id);
+			queueInfo.active = false;
+			queueInfo.callback(null, 'success');
+		}
+	}
+
+	console.log('runQueue: finished all tasks.');
+
+	queueRunning = false;
+}
+
 // exporting functions
 exports.open = open;
 exports.basic = basic;
+exports.advanced = advanced;
