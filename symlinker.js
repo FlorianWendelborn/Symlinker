@@ -183,6 +183,19 @@ function basic (sourcePath, destinationPath, options, callback) {
 	}
 }
 
+function removeBasic (path, callback) {
+	try {
+		if (fs.lstatSync(path).isSymbolicLink()) {
+			fs.unlinkSync(path);
+			return callback(null, true);
+		} else {
+			return callback(new Error('File is no symbolic link'), null);
+		}
+	} catch (err) {
+		return callback(new Error('Symbolic link not found.'), null);
+	}
+}
+
 var queue = [];
 var queueRunning;
 
@@ -190,6 +203,24 @@ function advanced (task, options, callback) {
 	// task {source, destination, files:[{path, name}, *]}
 
 	queue.push({
+		action: 'link',
+		source: task.source,
+		destination: task.destination,
+		files: task.files,
+		options: options,
+		callback: callback
+	});
+
+	if (!queueRunning) runQueue();
+}
+
+function removeAdvanced (task, options, callback) {
+	// task {source, destination, files:[{path, name}, *]}
+
+	console.log('removeAdvanced');
+
+	queue.push({
+		action: 'unlink',
 		source: task.source,
 		destination: task.destination,
 		files: task.files,
@@ -208,73 +239,113 @@ function runQueue () {
 	while (queue.length) {
 		console.log('runQueue: processing task');
 		// {source, destination, files:[{path, name}, *], callback}
-		var currentTask = queue.shift();
+		var currentTask = queue.shift(); // grab a task
 
-		// get paths
-		var sourcePath = path.normalize(currentTask.source);
-		var destinationPath = path.normalize(currentTask.destination);
-		var destinationDir = path.dirname(destinationPath);
+		/*--------------------[link]--------------------*/
 
-		// validify
-		var sourceValid = fs.existsSync(sourcePath);
-		var destinationValid = fs.existsSync(destinationPath);
-
-		if (!destinationValid) mkdirp.sync(destinationDir);
-
-		// iterate
-		for (var i = 0; i < currentTask.files.length; i++) {
-			console.log('runQueue: processing file ' + i);
-
-			var currentFile = currentTask.files[i];
-
+		if (currentTask.action == 'link') {
 			// get paths
-			var fileSourcePath = path.join(sourcePath, currentFile.path);
-			if (currentFile.name && currentFile.name != '') {
-				var fileDestinationPath = path.join(destinationPath, currentFile.name);
-			} else {
-				var fileDestinationPath = path.join(destinationPath, currentFile.path);
-			}
+			var sourcePath = path.normalize(currentTask.source);
+			var destinationPath = path.normalize(currentTask.destination);
+			var destinationDir = path.dirname(destinationPath);
 
 			// validify
-			var fileSourceValid = fs.existsSync(fileSourcePath);
-			var fileDestinationExisting = fs.existsSync(fileDestinationPath);
+			var sourceValid = fs.existsSync(sourcePath);
+			var destinationValid = fs.existsSync(destinationPath);
 
-			if (fileSourceValid && fileDestinationExisting && fs.lstatSync(fileDestinationPath).isSymbolicLink()) { // symbolic link at destination
-				if (!currentTask.options.recreateSymbolicLinks) { // not allowed to unlink symbolic links
-					// process queue
-					console.error('runQueue: error - destination is symlink', fileDestinationPath);
-					currentTask.failed = true;
-					currentTask.callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'), null);
-					break; // skip task
-				} else { // unlink symbolic link
-					fs.unlinkSync(fileDestinationPath);
+			if (!destinationValid) mkdirp.sync(destinationDir);
+
+			// iterate
+			for (var i = 0; i < currentTask.files.length; i++) {
+				var currentFile = currentTask.files[i];
+					
+				var fileName = (currentFile.name) ? currentFile.name : currentFile.path;
+
+				console.log('runQueue: processing file ' + fileName);
+
+				// get paths
+				var fileSourcePath = path.join(sourcePath, currentFile.path);
+				var fileDestinationPath = path.join(destinationPath, fileName);
+
+				// validify
+				var fileSourceValid = fs.existsSync(fileSourcePath);
+				var fileDestinationExisting = fs.existsSync(fileDestinationPath);
+
+				if (fileSourceValid && fileDestinationExisting && fs.lstatSync(fileDestinationPath).isSymbolicLink()) { // symbolic link at destination
+					if (!currentTask.options.recreateSymbolicLinks) { // not allowed to unlink symbolic links
+						// process queue
+						console.error('runQueue: error - destination is symlink', fileDestinationPath);
+						currentTask.failed = true;
+						currentTask.callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'), null);
+						break; // skip task
+					} else { // unlink symbolic link
+						fs.unlinkSync(fileDestinationPath);
+					}
 				}
-			}
-			if (fileSourceValid) {
-				var fileSourceStats = fs.lstatSync(fileSourcePath);
+				if (fileSourceValid) {
+					var fileSourceStats = fs.lstatSync(fileSourcePath);
 
-				mkdirp.sync(path.dirname(fileDestinationPath)); // create destination directory
+					mkdirp.sync(path.dirname(fileDestinationPath)); // create destination directory
 
-				if (fileSourceStats.isDirectory()) {
-					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'dir');
-				} else if (fileSourceStats.isFile()) {
-					fs.symlinkSync(fileSourcePath, fileDestinationPath, 'file');
+					if (fileSourceStats.isDirectory()) {
+						fs.symlinkSync(fileSourcePath, fileDestinationPath, 'dir');
+					} else if (fileSourceStats.isFile()) {
+						fs.symlinkSync(fileSourcePath, fileDestinationPath, 'file');
+					} else {
+						console.error('runQueue: error - source neither file nor folder', fileSourcePath);
+						currentTask.failed = true;
+						currentTask.callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+						break; // skip task
+					}
 				} else {
-					console.error('runQueue: error - source neither file nor folder', fileSourcePath);
+					console.error('runQueue: error - source file invalid', fileSourcePath);
 					currentTask.failed = true;
-					currentTask.callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+					currentTask.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
 					break; // skip task
 				}
-			} else {
-				console.error('runQueue: error - source file invalid', fileSourcePath);
-				currentTask.failed = true;
-				currentTask.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
-				break; // skip task
 			}
 		}
 
+		/*--------------------[unlink]--------------------*/
+
+		else if (currentTask.action == 'unlink') {
+			// get paths
+			var destinationPath = path.normalize(currentTask.destination);
+			var destinationValid = fs.existsSync(destinationPath);
+
+			if (destinationValid) {
+				for (var i = 0; i < currentTask.files.length; i++) {
+					var currentFile = currentTask.files[i];
+					
+					var fileName = (currentFile.name) ? currentFile.name : currentFile.path;
+
+					console.log('runQueue: processing file ' + fileName);
+
+					// get paths
+					var filePath = path.join(destinationPath, fileName);
+
+					// validify
+					var fileExisting = fs.existsSync(filePath);
+
+					if (fileExisting && fs.lstatSync(filePath).isSymbolicLink()) { // symbolic link at destination
+						fs.unlinkSync(filePath);
+					} else if (!currentTask.options.ignoreMissingSymbolicLinks) {
+						console.error('runQueue: error - smbolic link not found', filePath);
+						currentTask.failed = true;
+						currentTask.callback(new Error('Could not unlink symbolic link. File not found.'), null);
+						break; // skip task
+					}
+				}
+			}
+
+		} else {
+			console.error('runQueue: error - unknown action', fileSourcePath);
+			currentTask.failed = true;
+			currentTask.callback(new Error('Invalid action.'), null);
+		}
+
 		if (!currentTask.failed) currentTask.callback(null, 'success');
-		
+			
 		console.log('runQueue: finished processing task');
 	}
 
@@ -286,4 +357,6 @@ function runQueue () {
 // exporting functions
 exports.open = open;
 exports.basic = basic;
+exports.removeBasic = removeBasic;
 exports.advanced = advanced;
+exports.removeAdvanced = removeAdvanced;
