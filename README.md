@@ -1,7 +1,7 @@
 Symlinker
 =========
 
-Automatically creates symbolic links based on a provided file.
+Automatically creates symbolic links based on a provided file. Symlinker also has a [GUI](https://github.com/FlorianWendelborn/symlinker-gui).
 
 ##Installation
 
