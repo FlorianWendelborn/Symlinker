@@ -1,13 +1,15 @@
 Symlinker
 =========
 
+DISCLAIMER: The command line tool wasn't tested since the addition of the library part. It may or may not work. Feel free to submit any errors you might experience.
+
 Automatically creates symbolic links based on a provided file. Symlinker also has a [GUI](https://github.com/FlorianWendelborn/symlinker-gui).
 
-##Installation
+## Installation
 
 Symlinker requires [nodejs](http://nodejs.org/).
 
-###via [npm](http://github.com/isaacs/npm)
+### via [npm](http://github.com/isaacs/npm)
 
     npm install symlinker -g
 
@@ -15,7 +17,7 @@ Then type:
 
     symlinker [symlinkerFile]
 
-###via github
+### via github
 Symlinker requires the following npm packages:
 - [optimist](https://github.com/substack/node-optimist)
 - [mkdirp](https://github.com/substack/node-mkdirp)
@@ -30,13 +32,13 @@ Then type:
 
     node symlinker.js [symlinkerFile]
 
-##Symlinker File
+## Symlinker File
 
-###General Information
+### General Information
 
 A symlinker file is basically a list of the file- or foldernames you want to link. This files or folders must exist in the source folder and will be symlinked to the matching path in the destination folder. You can choose between two different formats.
 
-###advanced-newline [default]
+### advanced-newline [default]
 
 Example:
 ````text
@@ -68,7 +70,7 @@ Explanation:
 Tips:
 You can use multiple lists in one file. Also multiple output locations are possible.
 
-###text-newline
+### text-newline
 
 Example:
 ````text
@@ -80,7 +82,7 @@ To use text-newline you'll have to use this console argument:
 
 	-t text-newline -s [pathToSourceFolder] -d [pathToDestinationFolder]
 
-###JSON
+### JSON
 
 Example:
 ````json
@@ -90,32 +92,137 @@ For JSON you'll have to use the following console argument:
 
     -t json -s [pathToSourceFolder] -d [pathToDestinationFolder]
 
-##Options
-###-s --source [pathToSourceFolder] \(optional)
+## Options
+### -s --source [pathToSourceFolder] \(optional)
 Defines the path to the source folder.
 
-###-d --destination [pathToDestinationFolder] \(optional)
+### -d --destination [pathToDestinationFolder] \(optional)
 Defines the path to the destination folder.
 
-###-c --create (optional)
+### -c --create (optional)
 Eventually creates destination folder.
 
-###-f --skip (optional)
+### -f --skip (optional)
 Skips invalid paths while creating symbolic links.
 
-###-r --replace (optional)
+### -r --replace (optional)
 The -r option allows Symlinker to replace old symbolic links.
 
-###-i --ignore (optional)
+### -i --ignore (optional)
 Ignores file not found errors.
 
-###-t --type (optional)
+### -t --type (optional)
 Specifies the filetype of the Symlinker-file. Possible values:
 - advanced-newline (default)
 - text-newline
 - json
 
-##License
+## use as library || api
+### initialize:
+````javascript
+var symlinker = require('symlinker');
+````
+
+### basic
+````javascript
+// function basic (sourcePath, destinationPath, options, callback) {...}
+symlinker.basic('source/path', 'destination/path', {
+	recreateSymbolicLinks: true
+}, function (err, data) {
+	if (!err) {
+		console.log('everything went well');
+	} else {
+		console.error('oh noes', err)
+	}
+});
+````
+
+#### explanation
+Creates a symbolic link from 'source/path' to 'destination/path', will 'recreateSymbolicLinks' in case one conflicts with symlinks symlinker tries to create.
+
+### removeBasic
+````javascript
+// function removeBasic (path, callback) {...}
+symlinker.removeBasic('destination/path', function (err, data) {
+	if (!err) {
+		console.log('everything went well');
+	} else {
+		console.error('oh noes', err)
+	}
+});
+````
+
+#### explanation
+This will just delete the stuff created in the 'basic'-example
+
+### advanced
+````javascript
+// function advanced (task, options, callback) {...}
+// task {source, destination, files:[{path, name}, *]}
+symlinker.advanced({
+	source: 'source/path',
+	destination: 'destination/path',
+	files:[{
+		path: 'test.md',
+		name: null
+	},{
+		path: 'canThisRenameStuff.question',
+		name: 'ofCourse.answer'
+	}]
+}, {
+	recreateSymbolicLinks: false,
+	ignoreExisting: false
+}, function (err, data) {
+	if (!err) {
+		console.log('everything went well');
+	} else {
+		console.error('oh noes', err)
+	}
+});
+````
+
+#### explanation
+This will link the files 'test.md', 'canThisRenameStuff.question' from 'source/path' to 'destination/path'. It will also rename the last file to 'ofCourse.answer'.
+
+#### options
+|                option | description                                                                                      |
+|----------------------:|:-------------------------------------------------------------------------------------------------|
+| recreateSymbolicLinks | delete already existing symlinks (when checking individual file's location and symlink is found) |
+|        ignoreExisting | ignores existing files and continues to next file when true, otherwise will drop the task        |
+
+### removeAdvanced
+````javascript
+// function removeAdvanced (task, options, callback) {...}
+// task {destination, files:[{path, name}, *]}
+symlinker.removeAdvanced({
+	destination: 'destination/path',
+	files:[{
+		path: 'test.md',
+		name: null
+	},{
+		path: 'canThisRenameStuff.question',
+		name: 'ofCourse.answer'
+	}]
+}, {
+	ignoreMissingSymbolicLinks: true
+}, function (err, data) {
+	if (!err) {
+		console.log('everything went well');
+	} else {
+		console.error('oh noes', err)
+	}
+});
+````
+
+#### explanation
+Deletes all the symlinks created by the 'advanced'-example. It will also ignore any already missing symbolic link.
+
+#### options
+|                     option | description                            |
+|---------------------------:|:---------------------------------------|
+| ignoreMissingSymbolicLinks | ignores already deleted symbolic links |
+
+## License
 
 The MIT License (MIT)
 

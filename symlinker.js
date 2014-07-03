@@ -231,13 +231,12 @@ function advanced (task, options, callback) {
 }
 
 function removeAdvanced (task, options, callback) {
-	// task {source, destination, files:[{path, name}, *]}
+	// task {destination, files:[{path, name}, *]}
 
 	console.log('removeAdvanced');
 
 	queue.push({
 		action: 'unlink',
-		source: task.source,
 		destination: task.destination,
 		files: task.files,
 		options: options,
