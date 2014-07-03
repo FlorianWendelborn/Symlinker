@@ -157,7 +157,9 @@ function basic (sourcePath, destinationPath, options, callback) {
 	try {
 		if (fs.lstatSync(destinationPath).isSymbolicLink()) {
 			if (!options.recreateSymbolicLinks) {
-				return callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'));
+				process.nextTick(function () {
+					return callback(new Error('Could not create symbolic link. Destination is already a symbolic link.'));
+				});
 			} else {
 				fs.unlinkSync(destinationPath);
 			}
@@ -171,15 +173,23 @@ function basic (sourcePath, destinationPath, options, callback) {
 		var stats = fs.lstatSync(sourcePath);
 		if (stats.isDirectory()) {
 			fs.symlinkSync(sourcePath, destinationPath, 'dir');
-			return callback(null, true);
+			process.nextTick(function () {
+				return callback(null, true);
+			});
 		} else if (stats.isFile()) {
 			fs.symlinkSync(sourcePath, destinationPath, 'file');
-			return callback(null, true);
+			process.nextTick(function () {
+				return callback(null, true);
+			});
 		} else {
-			return callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'), null);
+			process.nextTick(function () {
+				return callback(new Error('Could not create symbolic link. Source is neither a file nor a folder.'));
+			});
 		}
 	} else { // source path is invalid
-		callback(new Error('Could not create symbolic link. Source doesn\'t exist.'));
+		process.nextTick(function () {
+			return callback(new Error('Could not create symbolic link. Source doesn\'t exist.'));
+		});
 	}
 }
 
@@ -187,12 +197,18 @@ function removeBasic (path, callback) {
 	try {
 		if (fs.lstatSync(path).isSymbolicLink()) {
 			fs.unlinkSync(path);
-			return callback(null, true);
+			process.nextTick(function () {
+				return callback(null, true);
+			});
 		} else {
-			return callback(new Error('File is no symbolic link'), null);
+			process.nextTick(function () {
+				return callback(new Error('File is no symbolic link'));
+			});
 		}
 	} catch (err) {
-		return callback(new Error('Symbolic link not found.'), null);
+		process.nextTick(function () {
+			return callback(new Error('Symbolic link not found.'));
+		});
 	}
 }
 
@@ -211,7 +227,7 @@ function advanced (task, options, callback) {
 		callback: callback
 	});
 
-	if (!queueRunning) runQueue();
+	if (!queueRunning) process.nextTick(runQueue);
 }
 
 function removeAdvanced (task, options, callback) {
@@ -228,7 +244,7 @@ function removeAdvanced (task, options, callback) {
 		callback: callback
 	});
 
-	if (!queueRunning) runQueue();
+	if (!queueRunning) process.nextTick(runQueue);
 }
 
 function runQueue () {
@@ -280,6 +296,15 @@ function runQueue () {
 						break; // skip task
 					} else { // unlink symbolic link
 						fs.unlinkSync(fileDestinationPath);
+					}
+				} else if (fileDestinationExisting) {
+					if (!currentTask.options.ignoreExisting) {
+						console.error('runQueue: error - file already existing', fileDestinationPath);
+						currentTask.failed = true;
+						currentTask.callback(new Error('Could not create symbolic link. Source file is invalid.'), null);
+						break; // skip task
+					} else {
+						continue; // with next file
 					}
 				}
 				if (fileSourceValid) {
