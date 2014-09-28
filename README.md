@@ -1,4 +1,4 @@
-Symlinker
+Symlinker [![Module Version](http://img.shields.io/npm/v/symlinker.svg?style=flat)](https://www.npmjs.org/package/symlinker)
 =========
 
 DISCLAIMER: The command line tool wasn't tested since the addition of the library part. It may or may not work. Feel free to submit any errors you might experience.
