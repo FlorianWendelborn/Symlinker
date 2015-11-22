@@ -1,9 +1,12 @@
-Symlinker [![Module Version](http://img.shields.io/npm/v/symlinker.svg?style=flat)](https://www.npmjs.org/package/symlinker)
-=========
+# Symlinker
 
-DISCLAIMER: The command line tool wasn't tested since the addition of the library part. It may or may not work. Feel free to submit any errors you might experience.
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](http://opensource.org/licenses/MIT)
+[![Code Climate](https://codeclimate.com/github/dodekeract/symlinker/badges/gpa.svg)](https://codeclimate.com/github/dodekeract/symlinker)
+[![NPM Downloads](https://img.shields.io/npm/dm/symlinker.svg)](https://npmjs.com/package/symlinker)
+[![NPM Dependencies](https://david-dm.org/dodekeract/symlinker.png)](https://david-dm.org/dodekeract/symlinker)
+[![Code Documentation](https://inch-ci.org/github/dodekeract/symlinker.svg)](https://inch-ci.org/github/dodekeract/symlinker)
 
-Automatically creates symbolic links based on a provided file. Symlinker also has a [GUI](https://github.com/FlorianWendelborn/symlinker-gui).
+Automatically creates symbolic links based on a provided file. Symlinker also has a [GUI](https://github.com/dodekeract/symlinker-gui).
 
 ## Installation
 
