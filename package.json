@@ -1,6 +1,6 @@
 {
   "name": "symlinker",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "author": "Florian Wendelborn",
   "description": "Node command line application to symlink a list of folders.",
   "repository": {

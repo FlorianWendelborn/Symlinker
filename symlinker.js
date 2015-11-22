@@ -6,7 +6,7 @@ var fs = require('fs');
 
 /* basic functions */
 
-function clone(obj){
+function clone (obj){
 	if(obj == null || typeof(obj) != 'object')
 		return obj;
 
@@ -41,7 +41,7 @@ function open (options) {
 	switch (options.type) {
 		case "text-newline":
 			try {
-					task = [{
+				task = [{
 					'input': options.sourcePath,
 					'items': rawFile.replace(/(\r)/gm,"").split("\n"),
 					'output': options.destinationPath
@@ -69,9 +69,9 @@ function open (options) {
 				var temp = rawFile.replace(/(\r)/gm,"").split("\n");
 
 				var queue = new Object();
-				
+
 				for (var i = 0; i < temp.length; i++) {
-					
+
 					var content = temp[i].slice(1);
 
 					switch(temp[i][0]) {
@@ -100,10 +100,10 @@ function open (options) {
 			console.error("Invalid value for Symlinker-file type.");
 			process.exit(1);
 	}
-	runTasks(task);
+	runTasks(task, options);
 }
 
-function runTasks (task) {
+function runTasks (task, options) {
 	for (var i = 0; i < task.length; i++) {
 		var q = task[i];
 
@@ -153,7 +153,7 @@ function runTasks (task) {
 	}
 }
 
-function basic (sourcePath, destinationPath, options, callback) {	
+function basic (sourcePath, destinationPath, options, callback) {
 	try {
 		if (fs.lstatSync(destinationPath).isSymbolicLink()) {
 			if (!options.recreateSymbolicLinks) {
@@ -167,7 +167,7 @@ function basic (sourcePath, destinationPath, options, callback) {
 	} catch (err) {
 		// file doesn't exist
 	}
-	
+
 	if (fs.existsSync(sourcePath)) { // source path is valid
 		mkdirp.sync(path.dirname(destinationPath));
 		var stats = fs.lstatSync(sourcePath);
@@ -273,7 +273,7 @@ function runQueue () {
 			// iterate
 			for (var i = 0; i < currentTask.files.length; i++) {
 				var currentFile = currentTask.files[i];
-					
+
 				var fileName = (currentFile.name) ? currentFile.name : currentFile.path;
 
 				console.log('runQueue: processing file ' + fileName);
@@ -340,7 +340,7 @@ function runQueue () {
 			if (destinationValid) {
 				for (var i = 0; i < currentTask.files.length; i++) {
 					var currentFile = currentTask.files[i];
-					
+
 					var fileName = (currentFile.name) ? currentFile.name : currentFile.path;
 
 					console.log('runQueue: processing file ' + fileName);
@@ -369,7 +369,7 @@ function runQueue () {
 		}
 
 		if (!currentTask.failed) currentTask.callback(null, 'success');
-			
+
 		console.log('runQueue: finished processing task');
 	}
 
